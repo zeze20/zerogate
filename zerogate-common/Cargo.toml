@@ -1,6 +1,12 @@
-﻿[package]
+[package]
 name = "zerogate-common"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+description = "Shared #[repr(C)] types for ZeroGate kernel ↔ userspace ABI"
+
+[features]
+default = []
+# Enable userspace-only helpers (Display, Debug via std, etc.)
+userspace = []
 
 [dependencies]
