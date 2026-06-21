@@ -1,0 +1,7 @@
+[workspace]
+resolver = "2"
+members = [
+    "zerogate-common",
+    # zerogate-ebpf is built separately with cargo +nightly build-ebpf (bpfel target)
+    # and must NOT be a workspace member—it requires #![no_std] + #![no_main].
+]
