@@ -1,63 +1,107 @@
 # ZeroGate
 
-__The Mathematically Verified, Zero-Copy eBPF Gateway for Zero-Trust Networks.__
+ZeroGate is an experimental Rust workspace for an eBPF/XDP and AF_XDP networking engine.
 
-ZeroGate is a next-generation infrastructure component engineered for extreme throughput and absolute data privacy. By bypassing the standard Linux network stack via hardware-sympathetic eBPF/XDP and AF_XDP, it delivers million-packets-per-second (Mpps) filtering without suffocating the CPU. 
+This repository is currently an architecture scaffold. It contains shared ABI types, packet-header definitions, parser scaffolding, frame-ownership models, userspace agent scaffolding, Verus-oriented model scaffolding, and KMS placeholders.
 
-It is built specifically for highly regulated environments (Defense, Finance, Telecom) where microsecond latency, absolute memory safety, and cryptographic privacy are non-negotiable.
+It is not yet a production-grade zero-copy dataplane.
 
-## Core Capabilities
+## Maturity Status
 
-- __Line-Rate DDoS Mitigation:__ Drops malicious or unauthorized UDP packets directly at the Network Interface Card (NIC) at wire speed, before they allocate any kernel memory.
-- __Microsecond Fast-Path Routing:__ Routes valid sessions directly to userspace, completely eliminating kernel-to-userspace context switches and cache-line bouncing.
-- __Privacy by Design (Zero-Trust):__ Ensures that no unauthorized entity can penetrate the network perimeter. Every single packet is cryptographically verified against a strict session map.
-- __Zero-Downtime Operations:__ Seamlessly updates routing rules and scales via Kubernetes without dropping a single active packet, utilizing BPFfs map pinning.
+### Implemented in this repository
 
-## Cutting-Edge Technologies
+- Workspace layout for:
+  - `zerogate-common`
+  - `zerogate-ebpf`
+  - `zerogate-agent`
+  - `zerogate-verus`
+  - `zerogate-kms`
+- Shared ABI and packet-header definition scaffolding.
+- eBPF parser and XDP pipeline scaffolding.
+- Frame ownership state-machine scaffolding.
+- Verus-oriented model scaffolding for ABI, parser, frame, and ring invariants.
+- KMS traits and development placeholders.
+- Architecture and security-invariant documentation scaffolding.
 
-ZeroGate integrates the absolute pinnacle of modern systems programming and cryptography:
+### Not yet production implemented
 
-- __Rust:__ The foundation of the userspace agent, providing fearless concurrency and memory safety.
-- __eBPF & AF_XDP:__ Kernel-level programmability for zero-copy packet processing (`XDP_ZEROCOPY`) and lock-free per-CPU telemetry.
-- __Verus (Formal Verification):__ The core parsing logic is mathematically proven. The compiler guarantees the absence of out-of-bounds reads and buffer overflows, resulting in zero runtime panics.
-- __Post-Quantum Cryptography (ML-KEM-768):__ Protects handshakes against "Harvest Now, Decrypt Later" quantum attacks.
-- __FROST & MPC (Multi-Party Computation):__ Threshold signing over isolated Tokio tasks ensures the master private key never materializes in memory, offering military-grade cryptographic privacy.
+- Real Linux AF_XDP socket creation and bind lifecycle.
+- Real Linux UMEM registration for AF_XDP.
+- Real RX/TX/FILL/COMPLETION ring mmap and polling.
+- Runtime XSK_MAP update from the userspace loader path.
+- CI build of the eBPF program for `bpfel-unknown-none`.
+- Privileged eBPF verifier/load smoke test.
+- Production cryptography.
+- Post-quantum cryptography, including ML-KEM.
+- FROST threshold signatures or MPC.
+- Kubernetes deployment integration.
+- Prometheus metrics integration.
+- Performance claims such as Mpps throughput or line-rate forwarding.
+- Completed formal verification claims.
 
-## ZeroGate Enterprise
+## Security Position
 
-While the fast-path data plane is open-source, the enterprise control plane offers carrier-grade orchestration for mission-critical infrastructure:
+ZeroGate should be treated as a work-in-progress security-sensitive systems project.
 
-- __Distributed Key Management System (KMS):__ Powered by FROST enclaves.
-- __Cloud-Native Productionization:__ NUMA-aware Kubernetes DaemonSets, strict CPU core pinning, and native Prometheus observability for real-time Mpps metrics.
-- __Advanced Threat Intelligence:__ Dynamic eBPF map updates based on real-time threat analysis.
+The current goal is to make invariants explicit, auditable, and testable before claiming production readiness.
 
-_(For enterprise licensing, architectural audits, and PoC requests, please contact the maintainers)._
+Important invariants under active development include:
 
-## Architecture Deep Dive
+- Shared ABI layout stability.
+- Parser bounds checking before packet reads.
+- Strict confinement of `unsafe` to audited modules.
+- UMEM frame single-ownership.
+- No TX-frame recycling before completion.
+- Deterministic policy decisions.
+- Keeping KMS and cryptographic material outside the dataplane hot path.
 
-1. __Ingress (Hardware):__ Packet hits the NIC Rx queues.
-2. __eBPF/XDP Hook (Kernel):__ The XDP program (`zerogate-ebpf`) inspects the custom `ChunkHdr` and evaluates the `session_id` strictly against the lock-free BPF `HashMap`.
-3. __Action Routing:__ 
-   - __Invalid Session:__ Executed as `XDP_DROP` (Instant, CPU-efficient rejection).
-   - __Valid Session:__ Executed as `XDP_REDIRECT` via `XSK_MAP`.
-4. __Userspace Processing (`zerogate-agent`):__ The Rust agent absorbs the packet via AF_XDP Rx rings pinned to the exact IRQ CPU core, ensuring L1/L2 cache locality and maximum performance.
+For more detail see:
+
+- `docs/ARCHITECTURE.md`
+- `docs/SECURITY_INVARIANTS.md`
+
+## Architecture Summary
+
+- **zerogate-common** defines constants, endian helpers, packet headers, and shared ABI types.
+- **zerogate-ebpf** contains the XDP/eBPF parser and map scaffolding.
+- **zerogate-agent** contains the userspace AF_XDP runtime scaffolding.
+- **zerogate-verus** contains model scaffolding intended to align with runtime invariants.
+- **zerogate-kms** contains policy-signing and key-loading boundaries. Current cryptographic implementations are development placeholders only.
 
 ## Quick Start
 
 ### Prerequisites
 
-- Ubuntu/Debian (or WSL 2) with a modern Linux Kernel (5.15+)
-- Rust Nightly toolchain
-- `bpf-linker` installed globally (`cargo install bpf-linker`)
+- Rust toolchain suitable for the workspace.
+- Linux is required for eventual AF_XDP and eBPF verifier/load testing.
+- Privileged eBPF/AF_XDP tests require appropriate Linux capabilities such as:
+  - `CAP_BPF`
+  - `CAP_NET_ADMIN`
+  - `CAP_IPC_LOCK` or suitable resource limits for locked UMEM memory
 
-### Build & Deploy
-
-Compile the eBPF ELF object and the highly optimized userspace agent:
+### Build And Check
 
 ```bash
-# Build the workspace in release mode for maximum throughput
-cargo build --workspace --release
+cargo fmt --all -- --check
+cargo check --workspace
+cargo test --workspace
+```
 
-# Note: Running the AF_XDP agent requires CAP_BPF, CAP_NET_ADMIN, and CAP_IPC_LOCK capabilities.
-License
-This project is licensed under the Apache License 2.0 - providing explicit patent protection for enterprise adopters.
+The eBPF build and privileged verifier/load path are planned hardening work and must not be assumed complete until the corresponding CI jobs and scripts exist.
+
+## Production Readiness
+
+This repository must not be described as production-ready until, at minimum:
+
+- The real Linux AF_XDP socket, UMEM, and ring path is implemented and tested.
+- The eBPF program builds for `bpfel-unknown-none` in CI.
+- A privileged verifier/load smoke test exists and passes on a Linux runner.
+- ABI layout tests pass.
+- Parser malformed-packet corpus tests pass.
+- Frame lifecycle and fake-ring integration tests pass.
+- The unsafe audit script passes in CI.
+- Documentation matches the implemented code.
+
+## License
+
+This project is licensed under the Apache License 2.0.
