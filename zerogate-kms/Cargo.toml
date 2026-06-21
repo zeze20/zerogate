@@ -1,0 +1,8 @@
+[package]
+name = "zerogate-kms"
+version = "0.1.0"
+edition = "2021"
+description = "Key management and policy signing for ZeroGate"
+
+[dependencies]
+zerogate-common = { path = "../zerogate-common" }

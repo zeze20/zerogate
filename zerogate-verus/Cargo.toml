@@ -1,0 +1,8 @@
+[package]
+name = "zerogate-verus"
+version = "0.1.0"
+edition = "2021"
+description = "Pure formal verification model for ZeroGate invariants"
+
+[dependencies]
+zerogate-common = { path = "../zerogate-common" }

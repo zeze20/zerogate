@@ -4,16 +4,13 @@ version = "0.1.0"
 edition = "2021"
 description = "XDP data-plane program for ZeroGate zero-trust enforcement"
 
-# This crate is NOT a workspace member.  Build with:
-#   cargo +nightly build-ebpf          (via xtask / cargo-bpf)
-# or directly:
+# This crate is NOT a workspace member. Build with:
 #   cargo +nightly build -Z build-std=core \
-#       --target bpfel-unknown-none    \
+#       --target bpfel-unknown-none \
 #       -p zerogate-ebpf
 
 [dependencies]
 aya-ebpf = "0.1"
-aya-log-ebpf = "0.1"
 zerogate-common = { path = "../zerogate-common" }
 
 [[bin]]

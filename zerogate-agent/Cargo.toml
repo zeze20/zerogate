@@ -1,0 +1,15 @@
+[package]
+name = "zerogate-agent"
+version = "0.1.0"
+edition = "2021"
+description = "Userspace AF_XDP agent for ZeroGate zero-trust data plane"
+
+[dependencies]
+zerogate-common = { path = "../zerogate-common" }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+log = "0.4"
+env_logger = "0.11"
+ctrlc = "3"
+libc = "0.2"
+core_affinity = "0.8"
