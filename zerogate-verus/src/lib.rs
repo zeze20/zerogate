@@ -1,14 +1,7 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+// SPDX-License-Identifier: GPL-2.0-only OR MIT
+//! Pure formal verification model for ZeroGate.
+//!
+//! This crate contains no syscalls, raw pointers, global mutable state,
+//! or OS APIs. All functions are pure, deterministic, and side-effect-free.
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub mod model;

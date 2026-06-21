@@ -1,6 +1,14 @@
-﻿[package]
+[package]
 name = "zerogate-ebpf"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+description = "XDP data-plane program for ZeroGate zero-trust enforcement"
+
+# When building as a workspace member on the host, this crate compiles as
+# a placeholder binary. The actual XDP program is built separately:
+#   cargo +nightly build -Z build-std=core --target bpfel-unknown-none -p zerogate-ebpf
 
 [dependencies]
+zerogate-common = { path = "../zerogate-common" }
+# aya-ebpf is only available for the bpfel target.
+# It is listed here for reference but is conditionally used.
