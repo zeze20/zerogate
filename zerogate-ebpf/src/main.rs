@@ -1,3 +1,6 @@
+pub mod parser;
+pub mod xdp;
+
 fn main() {
-    println!("Hello, world!");
+    println!("zerogate-ebpf: XDP parser scaffold");
 }
