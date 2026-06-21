@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "omega-common",
+    "omega-ebpf",
+    "omega-verus",
+    "omega-agent",
+    "omega-kms"
+]
+resolver = "2"
