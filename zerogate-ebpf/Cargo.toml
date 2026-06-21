@@ -1,5 +1,5 @@
-[package]
-name = "omega-agent"
+﻿[package]
+name = "zerogate-ebpf"
 version = "0.1.0"
 edition = "2024"
 

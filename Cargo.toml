@@ -1,9 +1,9 @@
-[workspace]
+﻿[workspace]
 members = [
-    "omega-common",
-    "omega-ebpf",
-    "omega-verus",
-    "omega-agent",
-    "omega-kms"
+    "zerogate-common",
+    "zerogate-ebpf",
+    "zerogate-verus",
+    "zerogate-agent",
+    "zerogate-kms"
 ]
 resolver = "2"
