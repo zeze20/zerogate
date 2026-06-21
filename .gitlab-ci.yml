@@ -1,0 +1,74 @@
+stages:
+  - format
+  - lint
+  - test
+  - security
+  - ebpf-build
+  - docs
+
+default:
+  image: rust:latest
+  before_script:
+    - rustc --version
+    - cargo --version
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .cargo/
+      - target/
+
+variables:
+  CARGO_TERM_COLOR: always
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+
+cargo_fmt:
+  stage: format
+  script:
+    - rustup component add rustfmt
+    - cargo fmt --all -- --check
+
+cargo_clippy:
+  stage: lint
+  script:
+    - rustup component add clippy
+    - cargo clippy --workspace --all-targets -- -D warnings
+
+cargo_check:
+  stage: lint
+  script:
+    - cargo check --workspace
+
+cargo_test:
+  stage: test
+  script:
+    - cargo test --workspace
+
+unsafe_audit:
+  stage: security
+  script:
+    - ./scripts/audit_no_unsafe.sh
+
+dependency_audit:
+  stage: security
+  allow_failure: true
+  script:
+    - echo "Dependency audit placeholder"
+
+ebpf_build_optional_or_required:
+  stage: ebpf-build
+  allow_failure: true
+  script:
+    - |
+      if [ -x scripts/build_ebpf.sh ]; then
+        ./scripts/build_ebpf.sh
+      else
+        echo "eBPF build path not implemented yet (expected)"
+      fi
+
+docs_smoke:
+  stage: docs
+  script:
+    - test -f README.md
+    - test -f docs/ARCHITECTURE.md
+    - test -f docs/SECURITY_INVARIANTS.md
+    - test -f docs/CI.md
