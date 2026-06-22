@@ -1,0 +1,86 @@
+stages:
+  - format
+  - lint
+  - test
+  - security
+  - ebpf-build
+  - docs
+
+default:
+  image: rust:latest
+  before_script:
+    - rustc --version
+    - cargo --version
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    paths:
+      - .cargo/
+      - target/
+
+variables:
+  CARGO_TERM_COLOR: always
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+
+cargo_fmt:
+  stage: format
+  script:
+    - rustup component add rustfmt
+    - cargo fmt --all -- --check
+
+cargo_clippy:
+  stage: lint
+  script:
+    - rustup component add clippy
+    - cargo clippy --workspace --all-targets -- -D warnings
+
+cargo_check:
+  stage: lint
+  script:
+    - cargo check --workspace
+
+cargo_test:
+  stage: test
+  script:
+    - cargo test --workspace
+
+unsafe_audit:
+  stage: security
+  script:
+    - ./scripts/audit_no_unsafe.sh
+
+dependency_audit:
+  stage: security
+  allow_failure: true
+  script:
+    - echo "Dependency audit placeholder"
+
+ebpf_build:
+  stage: ebpf-build
+  allow_failure: true
+  script:
+    - ./scripts/build_ebpf.sh
+  artifacts:
+    when: always
+    paths:
+      - target/bpfel-unknown-none/
+    expire_in: 1 week
+
+ebpf_verifier_load:
+  stage: ebpf-build
+  when: manual
+  allow_failure: true
+  script:
+    - ./scripts/verify_ebpf_load.sh
+  artifacts:
+    when: always
+    paths:
+      - artifacts/verifier.log
+    expire_in: 1 week
+
+docs_smoke:
+  stage: docs
+  script:
+    - test -f README.md
+    - test -f docs/ARCHITECTURE.md
+    - test -f docs/SECURITY_INVARIANTS.md
+    - test -f docs/CI.md

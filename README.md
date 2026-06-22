@@ -50,6 +50,10 @@ _(For enterprise licensing, architectural audits, and PoC requests, please conta
 - Rust Nightly toolchain
 - `bpf-linker` installed globally (`cargo install bpf-linker`)
 
+### Docker Development
+
+For a reproducible Linux development environment with Rust, nightly, LLVM, and bpf-linker pre-installed, see [docs/DOCKER.md](docs/DOCKER.md).
+
 ### Build & Deploy
 
 Compile the eBPF ELF object and the highly optimized userspace agent:

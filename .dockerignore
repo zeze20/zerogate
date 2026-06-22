@@ -1,0 +1,12 @@
+.git
+target
+repomix
+all_code.txt
+repomix*.txt
+*.tar
+*.tar.gz
+*.zip
+artifacts
+node_modules
+.DS_Store
+*.log
