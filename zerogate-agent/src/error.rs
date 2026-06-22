@@ -16,6 +16,12 @@ pub enum ZeroGateError {
     InvalidConfig(String),
     InvalidPolicy(String),
     InvalidSession(String),
+    InvalidUmemConfig(String),
+    InvalidFrameIndex { index: u32, frame_count: u32 },
+    InvalidUmemOffset { offset: u64, total_size: usize },
+    UnalignedUmemOffset { offset: u64, frame_size: u32 },
+    UmemAllocationFailed(String),
+    UmemSizeOverflow,
 }
 
 impl fmt::Display for ZeroGateError {
@@ -36,6 +42,28 @@ impl fmt::Display for ZeroGateError {
             ZeroGateError::InvalidConfig(msg) => write!(f, "invalid config: {msg}"),
             ZeroGateError::InvalidPolicy(msg) => write!(f, "invalid policy: {msg}"),
             ZeroGateError::InvalidSession(msg) => write!(f, "invalid session: {msg}"),
+            ZeroGateError::InvalidUmemConfig(msg) => write!(f, "invalid UMEM config: {msg}"),
+            ZeroGateError::InvalidFrameIndex { index, frame_count } => {
+                write!(
+                    f,
+                    "invalid frame index: {index} (frame_count={frame_count})"
+                )
+            }
+            ZeroGateError::InvalidUmemOffset { offset, total_size } => {
+                write!(f, "invalid UMEM offset: {offset} (total_size={total_size})")
+            }
+            ZeroGateError::UnalignedUmemOffset { offset, frame_size } => {
+                write!(
+                    f,
+                    "unaligned UMEM offset: {offset} (frame_size={frame_size})"
+                )
+            }
+            ZeroGateError::UmemAllocationFailed(msg) => {
+                write!(f, "UMEM allocation failed: {msg}")
+            }
+            ZeroGateError::UmemSizeOverflow => {
+                write!(f, "UMEM total size overflows usize")
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ mod error;
 mod maps;
 mod policy;
 mod sys;
+mod umem;
 
 use config::AgentConfig;
 use ebpf::{EbpfConfig, EbpfManager};
