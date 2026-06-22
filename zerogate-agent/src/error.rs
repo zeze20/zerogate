@@ -7,11 +7,15 @@ pub enum ZeroGateError {
     XdpAttachFailed(String),
     XdpDetachFailed(String),
     MapOpenFailed(String),
+    MapUpdateFailed(String),
+    MapDeleteFailed(String),
     InterfaceResolveFailed(String),
     InvalidEbpfState(String),
     UnsupportedPlatform(String),
     NotImplemented(String),
     InvalidConfig(String),
+    InvalidPolicy(String),
+    InvalidSession(String),
 }
 
 impl fmt::Display for ZeroGateError {
@@ -21,6 +25,8 @@ impl fmt::Display for ZeroGateError {
             ZeroGateError::XdpAttachFailed(msg) => write!(f, "XDP attach failed: {msg}"),
             ZeroGateError::XdpDetachFailed(msg) => write!(f, "XDP detach failed: {msg}"),
             ZeroGateError::MapOpenFailed(msg) => write!(f, "BPF map open failed: {msg}"),
+            ZeroGateError::MapUpdateFailed(msg) => write!(f, "BPF map update failed: {msg}"),
+            ZeroGateError::MapDeleteFailed(msg) => write!(f, "BPF map delete failed: {msg}"),
             ZeroGateError::InterfaceResolveFailed(msg) => {
                 write!(f, "interface resolve failed: {msg}")
             }
@@ -28,6 +34,8 @@ impl fmt::Display for ZeroGateError {
             ZeroGateError::UnsupportedPlatform(msg) => write!(f, "unsupported platform: {msg}"),
             ZeroGateError::NotImplemented(msg) => write!(f, "not implemented: {msg}"),
             ZeroGateError::InvalidConfig(msg) => write!(f, "invalid config: {msg}"),
+            ZeroGateError::InvalidPolicy(msg) => write!(f, "invalid policy: {msg}"),
+            ZeroGateError::InvalidSession(msg) => write!(f, "invalid session: {msg}"),
         }
     }
 }

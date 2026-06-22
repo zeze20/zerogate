@@ -102,6 +102,13 @@ BPF map access methods are placeholders returning `NotImplemented`:
 | `UnsupportedPlatform` | Running on non-Linux OS |
 | `NotImplemented` | Feature planned for future MR |
 
+## BPF Map Synchronization
+
+MR7 adds the BPF map synchronization boundary (`maps.rs`, `policy.rs`).
+The loader can eventually expose map handles to a production map backend.
+Until that backend is implemented, the in-memory backend is test-only and
+kernel map success is not claimed. See [BPF_MAPS.md](BPF_MAPS.md) for details.
+
 ## Current Limitations
 
 - Real Aya-based eBPF loading is scaffolded but not yet integrated (requires a valid eBPF object built on Linux).

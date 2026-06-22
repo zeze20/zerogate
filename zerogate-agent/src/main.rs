@@ -1,10 +1,14 @@
 mod config;
 mod ebpf;
 mod error;
+mod maps;
+mod policy;
 mod sys;
 
 use config::AgentConfig;
 use ebpf::{EbpfConfig, EbpfManager};
+use maps::{BpfMapManager, InMemoryMapBackend};
+use policy::PolicySnapshot;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -69,8 +73,20 @@ fn main() {
         std::process::exit(1);
     }
 
-    println!("XDP program attached. Waiting for shutdown signal...");
+    println!("XDP program attached.");
 
+    // Demonstrate BPF map manager with in-memory backend.
+    // Real kernel map binding is deferred until the Aya loader is integrated.
+    let map_mgr = BpfMapManager::new(InMemoryMapBackend::new());
+    let _snapshot = PolicySnapshot::empty();
+    println!(
+        "BPF map manager ready (in-memory backend, {} policies, {} sessions)",
+        map_mgr.backend().policy_count(),
+        map_mgr.backend().session_count(),
+    );
+    println!("Note: real kernel map sync is future work.");
+
+    println!("Waiting for shutdown signal...");
     // Block until interrupted. When Aya integration is complete, a proper
     // signal handler will call detach_xdp() before exiting. For now, the
     // loader will exit at load() above since the loader is not yet integrated.

@@ -100,6 +100,20 @@ mod tests {
         assert_eq!(be.to_be_bytes(), [0xDE, 0xAD, 0xBE, 0xEF]);
     }
 
+    // --- Session type layout tests ---
+
+    #[test]
+    fn session_key_layout() {
+        assert_eq!(core::mem::size_of::<SessionKey>(), 8);
+        assert_eq!(core::mem::align_of::<SessionKey>(), 1);
+    }
+
+    #[test]
+    fn session_value_layout() {
+        assert_eq!(core::mem::size_of::<SessionValue>(), 4);
+        assert_eq!(core::mem::align_of::<SessionValue>(), 1);
+    }
+
     #[test]
     fn be_u16_from_be_bytes() {
         let be = BeU16::from_be_bytes([0xAB, 0xCD]);

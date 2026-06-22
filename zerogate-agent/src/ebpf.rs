@@ -187,28 +187,34 @@ impl EbpfManager {
 
     /// Open the policy BPF map for reading/writing.
     ///
-    /// Not implemented — planned for MR7.
+    /// Real kernel POLICY map binding requires the Aya loader to expose
+    /// map handles. Until the loader is fully integrated, this returns
+    /// `NotImplemented`.
     pub fn open_policy_map(&mut self) -> Result<(), ZeroGateError> {
         Err(ZeroGateError::NotImplemented(
-            "policy map access is planned for MR7".to_string(),
+            "real kernel POLICY map binding is planned for a future MR".to_string(),
         ))
     }
 
     /// Open the session BPF map for reading/writing.
     ///
-    /// Not implemented — planned for MR7.
+    /// Real kernel SESSIONS map binding requires the Aya loader to expose
+    /// map handles. Until the loader is fully integrated, this returns
+    /// `NotImplemented`.
     pub fn open_session_map(&mut self) -> Result<(), ZeroGateError> {
         Err(ZeroGateError::NotImplemented(
-            "session map access is planned for MR7".to_string(),
+            "real kernel SESSIONS map binding is planned for a future MR".to_string(),
         ))
     }
 
     /// Open the XSK BPF map for AF_XDP socket registration.
     ///
-    /// Not implemented — planned for MR7.
+    /// Real kernel XSK_MAP binding requires both the Aya loader and
+    /// AF_XDP socket file descriptors. Until those are available, this
+    /// returns `NotImplemented`.
     pub fn open_xsk_map(&mut self) -> Result<(), ZeroGateError> {
         Err(ZeroGateError::NotImplemented(
-            "XSK map access is planned for MR7".to_string(),
+            "real kernel XSK_MAP binding is planned for a future MR".to_string(),
         ))
     }
 }
@@ -262,7 +268,7 @@ mod tests {
         let mut mgr = EbpfManager::new(test_config());
         match mgr.open_policy_map() {
             Err(ZeroGateError::NotImplemented(msg)) => {
-                assert!(msg.contains("MR7"));
+                assert!(msg.contains("POLICY"));
             }
             other => panic!("expected NotImplemented, got: {other:?}"),
         }
@@ -273,7 +279,7 @@ mod tests {
         let mut mgr = EbpfManager::new(test_config());
         match mgr.open_session_map() {
             Err(ZeroGateError::NotImplemented(msg)) => {
-                assert!(msg.contains("MR7"));
+                assert!(msg.contains("SESSIONS"));
             }
             other => panic!("expected NotImplemented, got: {other:?}"),
         }
@@ -284,7 +290,7 @@ mod tests {
         let mut mgr = EbpfManager::new(test_config());
         match mgr.open_xsk_map() {
             Err(ZeroGateError::NotImplemented(msg)) => {
-                assert!(msg.contains("MR7"));
+                assert!(msg.contains("XSK_MAP"));
             }
             other => panic!("expected NotImplemented, got: {other:?}"),
         }
@@ -331,11 +337,15 @@ mod tests {
             ZeroGateError::XdpAttachFailed("test".to_string()),
             ZeroGateError::XdpDetachFailed("test".to_string()),
             ZeroGateError::MapOpenFailed("test".to_string()),
+            ZeroGateError::MapUpdateFailed("test".to_string()),
+            ZeroGateError::MapDeleteFailed("test".to_string()),
             ZeroGateError::InterfaceResolveFailed("test".to_string()),
             ZeroGateError::InvalidEbpfState("test".to_string()),
             ZeroGateError::UnsupportedPlatform("test".to_string()),
             ZeroGateError::NotImplemented("test".to_string()),
             ZeroGateError::InvalidConfig("test".to_string()),
+            ZeroGateError::InvalidPolicy("test".to_string()),
+            ZeroGateError::InvalidSession("test".to_string()),
         ];
         for err in &errors {
             let msg = format!("{err}");
