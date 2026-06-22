@@ -54,16 +54,28 @@ dependency_audit:
   script:
     - echo "Dependency audit placeholder"
 
-ebpf_build_optional_or_required:
+ebpf_build:
   stage: ebpf-build
   allow_failure: true
   script:
-    - |
-      if [ -x scripts/build_ebpf.sh ]; then
-        ./scripts/build_ebpf.sh
-      else
-        echo "eBPF build path not implemented yet (expected)"
-      fi
+    - ./scripts/build_ebpf.sh
+  artifacts:
+    when: always
+    paths:
+      - target/bpfel-unknown-none/
+    expire_in: 1 week
+
+ebpf_verifier_load:
+  stage: ebpf-build
+  when: manual
+  allow_failure: true
+  script:
+    - ./scripts/verify_ebpf_load.sh
+  artifacts:
+    when: always
+    paths:
+      - artifacts/verifier.log
+    expire_in: 1 week
 
 docs_smoke:
   stage: docs
