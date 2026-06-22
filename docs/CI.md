@@ -110,18 +110,50 @@ Currently marked as `allow_failure`.
 
 ---
 
-### ebpf_build_optional_or_required
+### ebpf_build
 
-Runs eBPF build if script exists:
+Runs:
 
 ```bash
 ./scripts/build_ebpf.sh
 ```
 
-If not:
+Purpose:
 
-- It reports that the build path is not implemented
-- This is expected before Phase 5
+Builds the eBPF program for `bpfel-unknown-none` using Rust nightly and `-Z build-std=core`.
+
+Currently marked as `allow_failure` until GitLab runners have nightly, rust-src, and bpfel support fully prepared.
+
+Artifacts:
+
+- `target/bpfel-unknown-none/` (expires in 1 week)
+
+---
+
+### ebpf_verifier_load
+
+Runs:
+
+```bash
+./scripts/verify_ebpf_load.sh
+```
+
+Purpose:
+
+Attempts to load the eBPF object using `bpftool` to invoke the Linux BPF verifier.
+
+This job is **manual** because it requires:
+
+- Linux environment
+- Root or CAP_BPF/CAP_NET_ADMIN capabilities
+- `bpftool` installed
+- Mounted bpffs
+
+It is not triggered automatically on shared non-privileged runners.
+
+Artifacts:
+
+- `artifacts/verifier.log` (expires in 1 week)
 
 ---
 
