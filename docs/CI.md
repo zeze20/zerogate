@@ -211,6 +211,14 @@ Remove the injected unsafe block.
 
 ---
 
+## Docker Local Development
+
+A Docker-based development environment is available for local reproducible builds. It provides the same Rust, nightly, LLVM/clang, and bpf-linker toolchain used by the eBPF build scripts.
+
+GitLab CI remains the canonical CI path. The Docker verifier service is privileged and should be treated as a manual local/integration tool. See [DOCKER.md](DOCKER.md) for details.
+
+---
+
 ## Current Limitations
 
 - Dependency auditing is not yet enforced
