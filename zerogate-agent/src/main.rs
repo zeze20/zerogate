@@ -3,8 +3,10 @@ mod ebpf;
 mod error;
 mod maps;
 mod policy;
+mod rings;
 mod sys;
 mod umem;
+mod xsk;
 
 use config::AgentConfig;
 use ebpf::{EbpfConfig, EbpfManager};

@@ -22,6 +22,19 @@ pub enum ZeroGateError {
     UnalignedUmemOffset { offset: u64, frame_size: u32 },
     UmemAllocationFailed(String),
     UmemSizeOverflow,
+    InvalidXskConfig(String),
+    XskCreateFailed(String),
+    XskBindFailed(String),
+    XskCloseFailed(String),
+    InvalidRingConfig(String),
+    RingFull(String),
+    RingEmpty(String),
+    RingReleaseFailed(String),
+    InvalidDescriptor(String),
+    DescriptorOutOfBounds(String),
+    DescriptorTooLarge { len: u32, frame_size: u32 },
+    DescriptorZeroLength,
+    DuplicateDescriptor(String),
 }
 
 impl fmt::Display for ZeroGateError {
@@ -63,6 +76,36 @@ impl fmt::Display for ZeroGateError {
             }
             ZeroGateError::UmemSizeOverflow => {
                 write!(f, "UMEM total size overflows usize")
+            }
+            ZeroGateError::InvalidXskConfig(msg) => write!(f, "invalid XSK config: {msg}"),
+            ZeroGateError::XskCreateFailed(msg) => write!(f, "XSK create failed: {msg}"),
+            ZeroGateError::XskBindFailed(msg) => write!(f, "XSK bind failed: {msg}"),
+            ZeroGateError::XskCloseFailed(msg) => write!(f, "XSK close failed: {msg}"),
+            ZeroGateError::InvalidRingConfig(msg) => {
+                write!(f, "invalid ring config: {msg}")
+            }
+            ZeroGateError::RingFull(msg) => write!(f, "ring full: {msg}"),
+            ZeroGateError::RingEmpty(msg) => write!(f, "ring empty: {msg}"),
+            ZeroGateError::RingReleaseFailed(msg) => {
+                write!(f, "ring release failed: {msg}")
+            }
+            ZeroGateError::InvalidDescriptor(msg) => {
+                write!(f, "invalid descriptor: {msg}")
+            }
+            ZeroGateError::DescriptorOutOfBounds(msg) => {
+                write!(f, "descriptor out of bounds: {msg}")
+            }
+            ZeroGateError::DescriptorTooLarge { len, frame_size } => {
+                write!(
+                    f,
+                    "descriptor too large: len={len} exceeds frame_size={frame_size}"
+                )
+            }
+            ZeroGateError::DescriptorZeroLength => {
+                write!(f, "descriptor has zero length")
+            }
+            ZeroGateError::DuplicateDescriptor(msg) => {
+                write!(f, "duplicate descriptor: {msg}")
             }
         }
     }

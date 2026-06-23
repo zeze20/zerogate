@@ -42,6 +42,21 @@ The following invariants are enforced by `UmemConfig::validate()` and `UmemRegio
 
 ---
 
+## AF_XDP Ring Invariants
+
+1. **Descriptors must point inside UMEM.** Any `addr >= total_size` is rejected.
+2. **Descriptors must be frame-aligned** where required (`addr % frame_size == 0`).
+3. **Descriptor length must not exceed frame_size.** Oversized descriptors are rejected.
+4. **Descriptor length must be greater than zero** (strict policy in MR9).
+5. **Ring capacity must be enforced.** Submission beyond capacity returns `RingFull`.
+6. **No descriptor submission bypasses validation.** All public ring paths validate descriptors.
+7. **Fake rings are test-only.** They do not model kernel ring memory and must not be used in production.
+8. **Future frame ownership integration** must prevent duplicate ownership of the same frame.
+9. **Future TX frames must not be recycled** before the kernel signals completion.
+10. **No raw ring memory or raw pointers** are exposed through ring trait APIs.
+
+---
+
 ## eBPF Parser Invariants
 
 1. All pointer arithmetic in the parser is bounds-checked against `data_end`.
