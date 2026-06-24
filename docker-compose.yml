@@ -1,0 +1,59 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    image: zerogate-dev:latest
+    container_name: zerogate-dev
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - cargo-cache:/usr/local/cargo/registry
+      - cargo-git-cache:/usr/local/cargo/git
+      - target-cache:/workspace/target
+    environment:
+      CARGO_TERM_COLOR: always
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  ebpf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ebpf
+    image: zerogate-ebpf:latest
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - cargo-cache:/usr/local/cargo/registry
+      - cargo-git-cache:/usr/local/cargo/git
+      - target-cache:/workspace/target
+    environment:
+      CARGO_TERM_COLOR: always
+    command: ./scripts/build_ebpf.sh
+
+  verifier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ebpf
+    image: zerogate-ebpf:latest
+    working_dir: /workspace
+    privileged: true
+    volumes:
+      - .:/workspace
+      - /sys/fs/bpf:/sys/fs/bpf
+      - /lib/modules:/lib/modules:ro
+      - cargo-cache:/usr/local/cargo/registry
+      - cargo-git-cache:/usr/local/cargo/git
+      - target-cache:/workspace/target
+    environment:
+      CARGO_TERM_COLOR: always
+    command: ./scripts/verify_ebpf.sh
+
+volumes:
+  cargo-cache:
+  cargo-git-cache:
+  target-cache:
