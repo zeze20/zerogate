@@ -93,10 +93,18 @@ pub struct FramePool {
 impl FramePool {
     /// Create a new pool with `frame_count` frames, all initially `Free`.
     ///
-    /// Returns `FramePoolExhausted` if `frame_count` is zero.
+    /// Returns `FramePoolExhausted` if `frame_count` is zero, or
+    /// `InvalidUmemConfig` if `frame_count` exceeds `u32::MAX` (since
+    /// `FrameIndex` uses `u32`).
     pub fn new(frame_count: usize) -> Result<Self, ZeroGateError> {
         if frame_count == 0 {
             return Err(ZeroGateError::FramePoolExhausted { frame_count: 0 });
+        }
+        if frame_count > u32::MAX as usize {
+            return Err(ZeroGateError::InvalidUmemConfig(format!(
+                "frame_count {} exceeds u32::MAX",
+                frame_count
+            )));
         }
         let states = vec![FrameState::Free; frame_count];
         let free_list: VecDeque<usize> = (0..frame_count).collect();
@@ -433,6 +441,20 @@ mod tests {
         match result.unwrap_err() {
             ZeroGateError::FramePoolExhausted { frame_count: 0 } => {}
             other => panic!("expected FramePoolExhausted(0), got: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn frame_count_exceeding_u32_max_rejected() {
+        // FrameIndex uses u32, so frame_count > u32::MAX must be rejected
+        // to prevent silent index truncation.
+        let result = FramePool::new(u32::MAX as usize + 1);
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            ZeroGateError::InvalidUmemConfig(msg) => {
+                assert!(msg.contains("exceeds u32::MAX"));
+            }
+            other => panic!("expected InvalidUmemConfig, got: {other:?}"),
         }
     }
 
