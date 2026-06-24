@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::frame::FrameState;
+
 #[derive(Debug)]
 #[allow(dead_code)]
 pub enum ZeroGateError {
@@ -17,9 +19,18 @@ pub enum ZeroGateError {
     InvalidPolicy(String),
     InvalidSession(String),
     InvalidUmemConfig(String),
-    InvalidFrameIndex { index: u32, frame_count: u32 },
-    InvalidUmemOffset { offset: u64, total_size: usize },
-    UnalignedUmemOffset { offset: u64, frame_size: u32 },
+    InvalidFrameIndex {
+        index: u32,
+        frame_count: u32,
+    },
+    InvalidUmemOffset {
+        offset: u64,
+        total_size: usize,
+    },
+    UnalignedUmemOffset {
+        offset: u64,
+        frame_size: u32,
+    },
     UmemAllocationFailed(String),
     UmemSizeOverflow,
     InvalidXskConfig(String),
@@ -32,9 +43,21 @@ pub enum ZeroGateError {
     RingReleaseFailed(String),
     InvalidDescriptor(String),
     DescriptorOutOfBounds(String),
-    DescriptorTooLarge { len: u32, frame_size: u32 },
+    DescriptorTooLarge {
+        len: u32,
+        frame_size: u32,
+    },
     DescriptorZeroLength,
     DuplicateDescriptor(String),
+    InvalidFrameTransition {
+        index: u32,
+        current: FrameState,
+        attempted: FrameState,
+    },
+    FramePoolExhausted {
+        frame_count: usize,
+    },
+    FrameOwnershipCorrupt(String),
 }
 
 impl fmt::Display for ZeroGateError {
@@ -106,6 +129,26 @@ impl fmt::Display for ZeroGateError {
             }
             ZeroGateError::DuplicateDescriptor(msg) => {
                 write!(f, "duplicate descriptor: {msg}")
+            }
+            ZeroGateError::InvalidFrameTransition {
+                index,
+                current,
+                attempted,
+            } => {
+                write!(
+                    f,
+                    "invalid frame transition: frame {index} in state {current} \
+                     cannot transition to {attempted}"
+                )
+            }
+            ZeroGateError::FramePoolExhausted { frame_count } => {
+                write!(
+                    f,
+                    "frame pool exhausted: all {frame_count} frames are in use"
+                )
+            }
+            ZeroGateError::FrameOwnershipCorrupt(msg) => {
+                write!(f, "frame ownership corrupt: {msg}")
             }
         }
     }
