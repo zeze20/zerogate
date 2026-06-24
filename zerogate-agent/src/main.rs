@@ -1,6 +1,7 @@
 mod config;
 mod ebpf;
 mod error;
+mod frame;
 mod maps;
 mod policy;
 mod rings;
