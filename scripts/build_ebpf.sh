@@ -6,6 +6,7 @@ cd "$REPO_ROOT"
 
 echo "== ZeroGate eBPF build =="
 echo "Repo: $REPO_ROOT"
+echo "Platform: $(uname -s) $(uname -m)"
 
 if ! command -v rustup >/dev/null 2>&1; then
   echo "ERROR: rustup is required for eBPF build."
@@ -25,7 +26,13 @@ if ! command -v bpf-linker >/dev/null 2>&1; then
   exit 1
 fi
 
-rustup component add rust-src --toolchain nightly
+echo "Toolchain versions:"
+cargo --version
+rustc +nightly --version
+command -v bpf-linker && (bpf-linker --version 2>/dev/null || bpf-linker -V 2>/dev/null || echo "bpf-linker version unknown")
+clang --version 2>/dev/null | head -1 || true
+
+rustup component add rust-src --toolchain nightly 2>/dev/null || true
 
 echo "Building zerogate-ebpf for bpfel-unknown-none..."
 
@@ -35,4 +42,5 @@ cargo +nightly build \
   -p zerogate-ebpf
 
 echo "eBPF build completed."
-echo "Artifacts are under target/bpfel-unknown-none/"
+echo "Artifacts:"
+find target/bpfel-unknown-none -type f -maxdepth 5 2>/dev/null | sort || echo "  (no artifacts found)"

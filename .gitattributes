@@ -1,0 +1,13 @@
+# Auto detect text files and normalize line endings
+* text=auto
+
+# Force LF for shell scripts (required for Linux containers)
+*.sh text eol=lf
+
+# Force LF for Dockerfile and compose
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+
+# Force LF for Rust source
+*.rs text eol=lf
+*.toml text eol=lf
