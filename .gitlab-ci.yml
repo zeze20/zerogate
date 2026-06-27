@@ -3,6 +3,7 @@ stages:
   - lint
   - test
   - security
+  - formal
   - ebpf-build
   - docs
 
@@ -53,6 +54,18 @@ dependency_audit:
   allow_failure: true
   script:
     - echo "Dependency audit placeholder"
+
+tla_model_check:
+  stage: formal
+  image: eclipse-temurin:21-jdk
+  variables:
+    TLA_TOOLS_VERSION: "1.7.4"
+    TLA_TOOLS_JAR: "$CI_PROJECT_DIR/tla2tools.jar"
+  before_script:
+    - java -version
+    - curl -fsSL -o "$TLA_TOOLS_JAR" "https://github.com/tlaplus/tlaplus/releases/download/v${TLA_TOOLS_VERSION}/tla2tools.jar"
+  script:
+    - ./scripts/run_tla.sh quick
 
 ebpf_build:
   stage: ebpf-build
