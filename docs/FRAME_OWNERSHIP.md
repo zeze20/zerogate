@@ -137,3 +137,105 @@ MR11 (Queue Lifecycle) will call FramePool methods from the queue loop:
 5. `recycle_to_fill` or `submit_tx` depending on packet handling.
 6. `complete_tx` when kernel completes TX.
 7. `release_completion` to return frames to the free pool.
+
+## Formal Specification — MR10.1
+
+### 1. Purpose
+
+The TLA+ model in [`formal/tla/FrameOwnership.tla`](../formal/tla/FrameOwnership.tla)
+specifies the abstract ownership lifecycle of UMEM frames. It allows the MR10
+ownership invariants to be **formally specified and model-checked** with TLC
+over a finite frame set.
+
+This is a model of the *abstract state machine*. It does not verify the Rust
+implementation line-by-line, and it does not claim that ZeroGate is bug-free or
+fully formally verified. The claim is precisely:
+
+> The MR10 frame ownership lifecycle invariants are formally specified and
+> model-checkable with TLA+.
+
+### 2. Rust-to-TLA+ Mapping
+
+| Rust | TLA+ |
+|------|------|
+| `FrameState::Free` | `"Free"` |
+| `FrameState::InFill` | `"InFill"` |
+| `FrameState::Kernel` | `"Kernel"` |
+| `FrameState::Rx` | `"Rx"` |
+| `FrameState::User` | `"User"` |
+| `FrameState::Tx` | `"Tx"` |
+| `FrameState::Completion` | `"Completion"` |
+| `FramePool.states` (Vec) | `state` function (`Frames -> FrameStates`) |
+| `FramePool.free_list` (VecDeque) | `free` set |
+| `FrameState::can_transition_to` | `CanTransition(from, to)` |
+| `allocate_for_fill()` | `AllocateForFill` |
+| `mark_kernel_owned()` | `MarkKernelOwned` |
+| `mark_rx()` | `MarkRx` |
+| `acquire_user()` | `AcquireUser` |
+| `recycle_to_fill()` | `RecycleToFill` |
+| `submit_tx()` | `SubmitTx` |
+| `complete_tx()` | `CompleteTx` |
+| `release_completion()` | `ReleaseCompletion` |
+
+**Free-list abstraction:** The Rust implementation backs the free list with a
+`VecDeque` (stack/queue). The TLA+ model abstracts it as a **set** of free
+frames. Allocation order is intentionally abstracted away — set-based reasoning
+is sufficient for ownership correctness (no duplicates, no non-Free frame in the
+free list, free set matches Free state). The Rust uniqueness property is checked
+at runtime by `assert_no_duplicate_ownership`.
+
+### 3. Checked Invariants
+
+- `TypeOK` — variables stay within their domains.
+- `FrameInExactlyOneState` — every frame has exactly one state.
+- `FreeListOnlyFree` — every frame in `free` has state `Free`.
+- `FreeListMatchesState` — `free` is exactly the set of `Free` frames.
+- `NonFreeNotInFree` — a non-Free frame is never in `free`.
+- `TxNotFreeBeforeCompletion` — a `Tx` frame is never in `free`.
+- `UserNotFree`, `RxNotFree`, `InFillNotFree`, `KernelNotFree`,
+  `CompletionNotFree` — per-state exclusion from the free set.
+- `OwnershipConsistent` — conjunction of all the above.
+
+### 4. What This Model Checks
+
+- Only legal lifecycle transitions are reachable (illegal transitions are not
+  encoded in `Next`, so they cannot occur).
+- Free-list correctness: `free` always equals the set of `Free` frames.
+- Ownership consistency: no frame is `Free` while in
+  `Tx`/`User`/`Rx`/`Kernel`/`InFill`/`Completion`.
+- `Tx` frames cannot be returned directly to `Free` — they must pass through
+  `Completion` first.
+- No duplicate ownership and no allocate-twice / release-twice within the model.
+
+### 5. What This Model Does NOT Check
+
+- Does NOT verify Linux kernel correctness.
+- Does NOT verify the eBPF verifier's correctness.
+- Does NOT verify AF_XDP runtime correctness.
+- Does NOT verify NIC/DMA/hardware correctness.
+- Does NOT verify Rust compiler correctness.
+- Does NOT verify the actual Rust implementation code line-by-line.
+- Does NOT replace runtime tests or the unsafe audit.
+
+### 6. How to Run Model Checking
+
+TLA+ tooling (`tla2tools.jar`) is not bundled in the repo. Download it from
+<https://github.com/tlaplus/tlaplus/releases> and run with a Java 11+ runtime:
+
+```bash
+java -cp tla2tools.jar tlc2.TLC \
+  -config formal/tla/FrameOwnership.cfg \
+  formal/tla/FrameOwnership.tla
+```
+
+The configuration uses `N = 3` frames by default. For deeper exploration, edit
+the `CONSTANTS N` value in `FrameOwnership.cfg` to `N = 4`.
+
+### 7. Model Checking Result
+
+Last run with TLC 2.19 (tla2tools 1.7.4), Java 21:
+
+| N | States generated | Distinct states | Depth | Result |
+|---|------------------|-----------------|-------|--------|
+| 3 | 1177 | 343 | 19 | PASS — no invariant violations |
+| 4 | 10977 | 2401 | 25 | PASS — no invariant violations |
