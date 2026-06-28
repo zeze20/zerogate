@@ -50,6 +50,12 @@ _(For enterprise licensing, architectural audits, and PoC requests, please conta
 - Rust Nightly toolchain
 - `bpf-linker` installed globally (`cargo install bpf-linker`)
 
+### Development & Formal Tooling
+
+For the local toolchain — Rust nightly checks plus the Java + `tla2tools.jar`
+setup required to run the TLA+ model checks (`./scripts/run_tla.sh`) — see
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
 ### Docker Development
 
 For a reproducible Linux development environment with Rust, nightly, LLVM, and bpf-linker pre-installed, see [docs/DOCKER.md](docs/DOCKER.md).

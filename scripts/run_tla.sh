@@ -14,10 +14,10 @@
 #
 # Tooling discovery (no network downloads in this script):
 #   - Java:   uses $JAVA if set, else `java` on PATH.
-#   - tla2tools.jar: uses $TLA_TOOLS_JAR if set, else searches a few common
-#     locations. Download it once from
+#   - tla2tools.jar: uses $TLA2TOOLS_JAR (preferred) or the legacy $TLA_TOOLS_JAR
+#     if set, else searches a few common locations. Download it once from
 #     https://github.com/tlaplus/tlaplus/releases and either put it on one of the
-#     searched paths or export TLA_TOOLS_JAR=/path/to/tla2tools.jar.
+#     searched paths or export TLA2TOOLS_JAR=/path/to/tla2tools.jar.
 #
 set -euo pipefail
 
@@ -49,6 +49,11 @@ fi
 
 # --- Locate tla2tools.jar --------------------------------------------------
 find_tla_jar() {
+    # TLA2TOOLS_JAR is the preferred env var; TLA_TOOLS_JAR is kept for back-compat.
+    if [[ -n "${TLA2TOOLS_JAR:-}" && -f "${TLA2TOOLS_JAR}" ]]; then
+        echo "${TLA2TOOLS_JAR}"
+        return 0
+    fi
     if [[ -n "${TLA_TOOLS_JAR:-}" && -f "${TLA_TOOLS_JAR}" ]]; then
         echo "${TLA_TOOLS_JAR}"
         return 0
@@ -75,7 +80,7 @@ find_tla_jar() {
 if ! TLA_JAR="$(find_tla_jar)"; then
     echo "[run-tla] ERROR: tla2tools.jar not found." >&2
     echo "[run-tla] Download it from https://github.com/tlaplus/tlaplus/releases" >&2
-    echo "[run-tla] then set TLA_TOOLS_JAR=/path/to/tla2tools.jar, or place it at" >&2
+    echo "[run-tla] then set TLA2TOOLS_JAR=/path/to/tla2tools.jar, or place it at" >&2
     echo "[run-tla]   ${ROOT_DIR}/tla2tools.jar" >&2
     exit 127
 fi
