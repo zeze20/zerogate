@@ -59,11 +59,12 @@ tla_model_check:
   stage: formal
   image: eclipse-temurin:21-jdk
   variables:
-    TLA_TOOLS_VERSION: "1.7.4"
-    TLA_TOOLS_JAR: "$CI_PROJECT_DIR/tla2tools.jar"
+    TLA2TOOLS_VERSION: "1.7.4"
+    TLA2TOOLS_JAR: "$CI_PROJECT_DIR/tla2tools.jar"
   before_script:
     - java -version
-    - curl -fsSL -o "$TLA_TOOLS_JAR" "https://github.com/tlaplus/tlaplus/releases/download/v${TLA_TOOLS_VERSION}/tla2tools.jar"
+    - curl -fSL --retry 3 -o "$TLA2TOOLS_JAR" "https://github.com/tlaplus/tlaplus/releases/download/v${TLA2TOOLS_VERSION}/tla2tools.jar"
+    - test -s "$TLA2TOOLS_JAR"
   script:
     - ./scripts/run_tla.sh quick
 

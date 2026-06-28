@@ -27,7 +27,8 @@ The runner script is [`../scripts/run_tla.sh`](../scripts/run_tla.sh). It needs:
 - A Java 11+ runtime (`java` on `PATH`, or `$JAVA`).
 - `tla2tools.jar` — download once from
   <https://github.com/tlaplus/tlaplus/releases> and either place it at the repo
-  root (`tla2tools.jar`) or export `TLA_TOOLS_JAR=/path/to/tla2tools.jar`.
+  root (`tla2tools.jar`) or export `TLA2TOOLS_JAR=/path/to/tla2tools.jar`. See
+  [`../docs/DEVELOPMENT.md`](../docs/DEVELOPMENT.md) for full local setup.
 
 The script does **not** download anything itself, so it stays deterministic and
 offline-friendly. If tooling is missing it exits non-zero with instructions — it
@@ -77,14 +78,13 @@ is tracked as future spec work.
   [`../.gitlab-ci.yml`](../.gitlab-ci.yml) (stage `formal`) uses the
   `eclipse-temurin:21-jdk` image, downloads `tla2tools.jar`, and runs
   `./scripts/run_tla.sh quick`.
-- **GitHub Actions (pending):** a workflow that installs Temurin JDK 21,
-  downloads `tla2tools.jar`, and runs `./scripts/run_tla.sh quick` (with manual
-  `extended` via `workflow_dispatch`) is provided in the MR10.2 PR description. It
-  is not committed in this PR because adding files under `.github/workflows/`
-  requires a token with `workflow` scope, which this automation lacks. A
-  maintainer can add it directly.
+- **GitHub Actions (active):** [`../.github/workflows/tla.yml`](../.github/workflows/tla.yml)
+  installs Temurin JDK 21, downloads the pinned `tla2tools.jar`, sets
+  `TLA2TOOLS_JAR`, and runs `./scripts/run_tla.sh quick`. It triggers on
+  `pull_request` (any base — stacked PRs included), `workflow_dispatch` (with a
+  `mode` input for `extended`), and `push` to `main`.
 
-The GitLab job runs **real** TLC; it does not echo a fake success.
+Both jobs run **real** TLC; they do not echo a fake success.
 
 ## What a TLC failure means
 
